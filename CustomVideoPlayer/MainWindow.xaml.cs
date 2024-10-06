@@ -1,25 +1,25 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
+using System.Runtime.InteropServices;
 using Windows.Media.Core;
-using WinRT.Interop; // For interop calls
-using Windows.Foundation; // This contains the Point struct
-using System.Runtime.InteropServices;  // For DllImport
-
-
+using WinRT.Interop;  // For WindowNative.GetWindowHandle
 
 namespace CustomVideoPlayer
 {
     public sealed partial class MainWindow : Window
     {
-        private bool isDragging;
-        private Point lastPointerPosition;
+        private bool isDragging = false;
+        private Windows.Foundation.Point lastPointerPosition;
 
         public MainWindow()
         {
             this.InitializeComponent();
+
+            // Make window borderless (removing close, minimize, maximize buttons, and title bar)
+            var hwnd = WindowNative.GetWindowHandle(this);
+            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SYSMENU | WS_CAPTION | WS_THICKFRAME));
 
             // Remove title bar
             this.ExtendsContentIntoTitleBar = true;
@@ -30,7 +30,7 @@ namespace CustomVideoPlayer
             this.mediaPlayerElement.PointerMoved += MediaPlayerElement_PointerMoved;
             this.mediaPlayerElement.PointerReleased += MediaPlayerElement_PointerReleased;
 
-            // Load and play video
+            // Play video automatically and make it fill the window
             mediaPlayerElement.Source = MediaSource.CreateFromUri(new Uri("ms-appx:///Assets/qj0sopzku6kc1.mp4"));
             mediaPlayerElement.MediaPlayer.Play();
         }
@@ -79,25 +79,36 @@ namespace CustomVideoPlayer
                 Win32Interop.MoveWindow(hwnd, rect.Left + deltaX, rect.Top + deltaY, width, height, true);
             }
         }
+
+        // Win32 API functions to make the window borderless
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        private const int GWL_STYLE = -16;
+        private const int WS_SYSMENU = 0x00080000;
+        private const int WS_CAPTION = 0x00C00000;  // Removes the title bar
+        private const int WS_THICKFRAME = 0x00040000;  // Removes the resizable border
     }
 
-}
+    // Define RECT struct for GetWindowRect
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
 
+    public static class Win32Interop
+    {
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-public static class Win32Interop
-{
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct RECT
-{
-    public int Left;
-    public int Top;
-    public int Right;
-    public int Bottom;
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+    }
 }

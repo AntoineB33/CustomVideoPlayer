@@ -17,8 +17,8 @@
     </PropertyGroup>
 
 	<ItemGroup>
-    <Content Remove="Assets\qj0sopzku6kc1.mp4" />
-  </ItemGroup>
+	  <None Remove="Assets\qj0sopzku6kc1.mp4" />
+	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -43,6 +43,11 @@
   -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\qj0sopzku6kc1.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!--

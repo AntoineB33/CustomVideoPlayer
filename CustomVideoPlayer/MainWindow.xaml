@@ -9,13 +9,13 @@
 
 
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    <!-- Video Player -->
-    <MediaPlayerElement
+    <Grid Background="Black">
+        <!-- Video Player -->
+        <MediaPlayerElement
             x:Name="mediaPlayerElement"
             AreTransportControlsEnabled="False"
-            Width="800"
-            Height="450"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
             AutoPlay="True"/>
     </Grid>
 </Window>
